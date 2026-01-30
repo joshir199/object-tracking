@@ -7,8 +7,19 @@ import math
 import cv2     # assuming you still need it downstream
 from sam2.build_sam import build_sam2_video_predictor
 
+
+# global predictor initialisation
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+
+
+sam2_checkpoint = "./checkpoints/sam2.1_hiera_tiny.pt"
+model_cfg = "configs/sam2.1/sam2.1_hiera_t.yaml"
+predictor = build_sam2_video_predictor(model_cfg, sam2_checkpoint, device=device)
+
+
 # single object tracking (SOT)
-def run_tracking(predictor, video_frames_path, selected_points_np):
+def run_tracking(video_frames_path, selected_points_np):
     # SAM2 / tracking code here
     #initialisation of sam predictor
     inference_state = predictor.init_state(video_path=video_frames_path)
@@ -166,7 +177,7 @@ def clear_points(original_pil):
     return original_pil, [], "Points cleared."
 
 
-def on_run_tracking(predictor, video_path, points_list):
+def on_run_tracking(video_path, points_list):
     if video_path is None:
         return None, "No video loaded."
     if len(points_list) < 1:
@@ -176,7 +187,7 @@ def on_run_tracking(predictor, video_path, points_list):
 
     try:
         frames_dir = "./video_frames"
-        out_path = run_tracking(predictor, frames_dir, points_np)
+        out_path = run_tracking(frames_dir, points_np)
         return out_path, f"Tracking finished → {out_path}"
     except Exception as e:
         return None, f"Tracking error: {str(e)}"
@@ -185,20 +196,11 @@ def on_run_tracking(predictor, video_path, points_list):
 
 if __name__ == "__main__":
 
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Using device: {device}")
-
-
-    sam2_checkpoint = "./checkpoints/sam2.1_hiera_tiny.pt"
-    model_cfg = "configs/sam2.1/sam2.1_hiera_t.yaml"
-    predictor = build_sam2_video_predictor(model_cfg, sam2_checkpoint, device=device)
-
     # ─── Gradio UI ──────────────────────────────────────────────────
 
-    with gr.Blocks(title="SAM2 – Click Points on First Frame") as demo:
+    with gr.Blocks(title="Object Tracking Made Easy") as demo:
         gr.Markdown("""
-        # ✨ SAM2 Object Tracking Demo
+        # ✨ SAM2-based Object Tracking 
         1. Upload a video
         2. Click **two points** on the **first frame** to mark the object
         3. Press **Run Tracking**
@@ -260,8 +262,8 @@ if __name__ == "__main__":
         # Run tracking
         run_btn.click(
             fn=on_run_tracking,
-            inputs=[predictor, video_input, clicked_points],
+            inputs=[video_input, clicked_points],
             outputs=[output_video, status_text]
         )
 
-    demo.launch()
+    demo.launch(share=True)
