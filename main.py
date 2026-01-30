@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     with gr.Blocks(title="Object Tracking Made Easy") as demo:
         gr.Markdown("""
-        # ✨ SAM2-based Object Tracking 
+        # ✨ Object Tracking Made Easy 
         1. Upload a video
         2. Click **two points** on the **first frame** to mark the object
         3. Press **Run Tracking**

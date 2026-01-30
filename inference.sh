@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ────────────────────────────────────────────────
-#  inference.sh
-# ────────────────────────────────────────────────
-
-# ================ CONFIGURATION ================
-
 # Change these paths according to your actual directory structure
-PATH = "content"
-MAIN_PY_SOURCE="/${PATH}/object-tracking/main.py"
-SAM2_ROOT="/${PATH}/sam2"
-CHECKPOINT_SOURCE="/${PATH}/SAM2_checkpoint"
+BASE_PATH="content/object-tracking"
+MAIN_PY_SOURCE="/${BASE_PATH}/main.py"
+SAM2_ROOT="/${BASE_PATH}/sam2"
+CHECKPOINT_SOURCE="/content/sam2.1_hiera_tiny.pt"
 CHECKPOINT_DEST="${SAM2_ROOT}/checkpoints"
 
 # ===============================================
@@ -61,13 +55,5 @@ echo ""
 echo "→ Installing libraries in editable mode (-e) ..."
 pip install --upgrade gradio
 pip install -e .
-echo ""
+echo "build finished"
 
-# 6. Launch
-echo "→ Starting the application..."
-echo ""
-
-python3 main.py
-
-echo ""
-echo "Script finished."
