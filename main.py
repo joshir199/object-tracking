@@ -57,11 +57,11 @@ def run_tracking(video_frames_path, selected_points_np):
         for i, out_obj_id in enumerate(out_obj_ids):
             # Convert logits to binary mask and squeeze to ensure 2D shape
             mask = (out_mask_logits[i] > 0.0).cpu().numpy().squeeze().astype(np.uint8)
-            color = [250, 200, 0]
+            color = [255, 165, 0]
             # Apply color to the mask area on the overlay
             overlay[mask > 0] = color
 
-            alpha = 0.4
+            alpha = 0.5
             combined_frame = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
 
             video_writer.write(combined_frame)
@@ -198,6 +198,30 @@ if __name__ == "__main__":
 
     # ─── Gradio UI ──────────────────────────────────────────────────
 
+    custom_css = """
+    #original_ratio_video {
+        width: 500px;           /* Set your desired width here */
+        height: auto !important; /* Force auto-height to keep original ratio */
+        margin: 0 auto;         
+    }
+
+    #original_ratio_video video {
+        height: auto !important; 
+        object-fit: contain;     
+    }
+    
+    #centered_image {
+        width: 500px;            /* Set your target width */
+        height: auto !important;  /* Overrides Gradio's internal fixed height */
+        margin: 0 auto;          /* Centers the image container */
+    }
+    
+    #centered_image img {
+        height: auto !important; 
+        object-fit: contain;      
+    }
+    """
+
     with gr.Blocks(title="Object Tracking Made Easy") as demo:
         gr.Markdown("""
         # ✨ Object Tracking Made Easy 
@@ -211,7 +235,7 @@ if __name__ == "__main__":
                 label="Upload video (MP4)",
                 sources=["upload"],
                 format="mp4",
-                height=360
+                elem_id="original_ratio_video"
             )
 
         status_text = gr.Textbox(label="Status", interactive=False)
@@ -221,14 +245,18 @@ if __name__ == "__main__":
                 label="First frame – click 2 points to select object",
                 type="pil",
                 interactive=True,
-                height=520
+                elem_id="centered_image"
             )
 
         with gr.Row():
             clear_btn = gr.Button("Clear points", variant="secondary")
             run_btn = gr.Button("Run Tracking", variant="primary")
 
-        output_video = gr.Video(label="Tracking Result")
+        output_video = gr.Video(
+            label="Tracking Result",
+            show_download_button=True,
+            elem_id="original_ratio_video"
+        )
 
         # ─── States ─────────────────────────────────────────────────────
 
